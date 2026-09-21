@@ -1,175 +1,217 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
-import numpy as np
+import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-
-# In[2]:
-
-
-#1.load
-df = pd.read_csv('gym_members_exercise_tracking.csv')
-
-
-# In[3]:
-
-
-df.head()
-
-
-# In[4]:
-
-
-df.shape
-
-
-# In[5]:
-
-
-#now will perform EDA
-df.info()
-
-
-# In[6]:
-
-
-#1Gender
-#2 workout Type
-df['Gender'].unique()
-
-
-# In[7]:
-
-
-df['Workout_Type'].unique()
-
-
-# In[8]:
-
-
-#2 to check null values
-df.isnull().sum()
-
-
-# In[9]:
-
-
-#checking target columns (calories_burned) for skewness
-sns.histplot(df['Calories_Burned'],kde=True)
-
-
-# In[10]:
-
-
-df['Calories_Burned'].skew()
-
-
-# In[11]:
-
-
-#coorelation and heatmap btw numerical feature
-corr = df.corr(numeric_only=True)
-
-
-# In[12]:
-
-
-plt.figure(figsize=(10,10))
-sns.heatmap(corr,annot=True)
-
-
-# In[13]:
-
-
-# Gender , workout_type encode
-df['Gender'] = df['Gender'].map({'Male':0,'Female':1})
-df.head()
-
-
-# In[14]:
-
-
-#Workout_type onehot encode
-df = pd.get_dummies(df,columns=['Workout_Type'])
-df.head()
-
-
-# In[15]:
-
-
-#split x and y variables
-x = df.drop('Calories_Burned',axis=1)
-y = df['Calories_Burned']
-
-
-# In[16]:
-
-
-#Train test split
-from sklearn.model_selection import train_test_split
-x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=0.2,random_state=42)
-
-
-# In[17]:
-
-
-from sklearn.preprocessing import StandardScaler
-scaler = StandardScaler()
-x_train = scaler.fit_transform(x_train)
-x_test = scaler.transform(x_test)   # to prevent from data leakage
-
-
-# In[18]:
-
-
-#Build linear regression model
-from sklearn.linear_model import LinearRegression
-linear_model = LinearRegression()
-linear_model.fit(x_train,y_train)
-
-
-# In[19]:
-
-
-y_pred = linear_model.predict(x_test)
-
-
-# In[20]:
-
-
-from sklearn.metrics import mean_squared_error,mean_absolute_error,r2_score
-
-
-# In[21]:
-
-
-#test accuracy
-print(r2_score(y_test,y_pred))
-
-
-# In[22]:
-
-
-# Train accuracy
-r2_score(y_train,linear_model.predict(x_train))
-
-
-# In[23]:
-
-
-mean = mean_absolute_error(y_test,y_pred)
-print(mean)
-
-
-# In[24]:
-
-
 import joblib
-joblib.dump(linear_model,'linear_model.pkl')
 
+
+# Load trained model
+model = joblib.load("calories_burned_prediction_model.pkl")
+
+
+st.set_page_config(
+    page_title="Calories Burned Prediction",
+    page_icon="🏋️",
+    layout="centered"
+)
+
+
+st.title("🏋️ Calories Burned Prediction")
+
+st.write(
+    "Enter the workout and personal details below "
+    "to predict calories burned."
+)
+
+
+# ============================================================
+# USER INPUTS
+# ============================================================
+
+age = st.number_input(
+    "Age",
+    min_value=10,
+    max_value=100,
+    value=25
+)
+
+
+gender = st.selectbox(
+    "Gender",
+    ["Male", "Female"]
+)
+
+
+weight = st.number_input(
+    "Weight (kg)",
+    min_value=20.0,
+    max_value=200.0,
+    value=70.0
+)
+
+
+height = st.number_input(
+    "Height (m)",
+    min_value=1.0,
+    max_value=2.5,
+    value=1.70
+)
+
+
+session_duration = st.number_input(
+    "Session Duration (hours)",
+    min_value=0.1,
+    max_value=10.0,
+    value=1.0
+)
+
+
+workout_type = st.selectbox(
+    "Workout Type",
+    [
+        "Cardio",
+        "HIIT",
+        "Strength",
+        "Yoga"
+    ]
+)
+
+
+water_intake = st.number_input(
+    "Water Intake (liters)",
+    min_value=0.0,
+    max_value=10.0,
+    value=2.0
+)
+
+
+workout_frequency = st.number_input(
+    "Workout Frequency (days/week)",
+    min_value=0,
+    max_value=7,
+    value=3
+)
+
+
+experience_level = st.number_input(
+    "Experience Level",
+    min_value=1,
+    max_value=5,
+    value=2
+)
+
+
+# ============================================================
+# ADDITIONAL FEATURES REQUIRED BY YOUR MODEL
+# ============================================================
+
+bmi = st.number_input(
+    "BMI",
+    min_value=10.0,
+    max_value=60.0,
+    value=23.0
+)
+
+
+fat_percentage = st.number_input(
+    "Fat Percentage",
+    min_value=1.0,
+    max_value=60.0,
+    value=20.0
+)
+
+
+resting_bpm = st.number_input(
+    "Resting BPM",
+    min_value=30,
+    max_value=120,
+    value=70
+)
+
+
+avg_bpm = st.number_input(
+    "Average BPM",
+    min_value=40,
+    max_value=220,
+    value=120
+)
+
+
+max_bpm = st.number_input(
+    "Maximum BPM",
+    min_value=50,
+    max_value=250,
+    value=180
+)
+
+
+# ============================================================
+# PREDICTION
+# ============================================================
+
+if st.button("🔥 Predict Calories Burned"):
+
+    input_data = pd.DataFrame({
+        
+        "Age": [age],
+
+        "Gender": [gender],
+
+        "Weight (kg)": [weight],
+
+        "Height (m)": [height],
+
+        "Session_Duration (hours)": [
+            session_duration
+        ],
+
+        "Workout_Type": [workout_type],
+
+        "Water_Intake (liters)": [
+            water_intake
+        ],
+
+        "Workout_Frequency (days/week)": [
+            workout_frequency
+        ],
+
+        "Experience_Level": [
+            experience_level
+        ],
+
+        "BMI": [bmi],
+
+        "Fat_Percentage": [
+            fat_percentage
+        ],
+
+        "Resting_BPM": [
+            resting_bpm
+        ],
+
+        "Avg_BPM": [
+            avg_bpm
+        ],
+
+        "Max_BPM": [
+            max_bpm
+        ]
+    })
+
+
+    try:
+
+        prediction = model.predict(
+            input_data
+        )
+
+        st.success(
+            f"🔥 Predicted Calories Burned: "
+            f"{prediction[0]:.2f} calories"
+        )
+
+    except Exception as e:
+
+        st.error(
+            "Prediction failed."
+        )
+
+        st.exception(e)
