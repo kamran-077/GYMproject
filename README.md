@@ -74,20 +74,13 @@ The model is trained on `gym_members_exercise_tracking.csv`, which has **973 gym
 
 ## 🚀 Getting Started
 
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/<your-username>/<your-repo-name>.git
-cd <your-repo-name>
-```
-
-### 2. Install dependencies
+### 1. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Run the app
+### 2. Run the app
 
 ```bash
 streamlit run 2MLproject.py
@@ -112,14 +105,11 @@ The app opens in your browser at `http://localhost:8501`.
 - Add charts for feature importance
 - Deploy online with Streamlit Community Cloud
 
-## ⚠️ Disclaimer
-
-This project is for learning and educational purposes. Predictions are estimates and should not be used for medical or health decisions.
 
 ## 👨‍💻 Author
 
-Made by **<Your Name>**
-GitHub: [@<your-username>](https://github.com/<your-username>)
+Made by **<Kamran Shahid>**
+@kamran-077
 
 ---
 
